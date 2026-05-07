@@ -7,6 +7,8 @@ export default function Dashboard() {
   const [programs, setPrograms] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [programSearch, setProgramSearch] = useState('');
+  const [formProgramSearch, setFormProgramSearch] = useState('');
+  const [showProgramSuggestions, setShowProgramSuggestions] = useState(false);
   const [sessionUser, setSessionUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -121,7 +123,10 @@ export default function Dashboard() {
   // --- FUNGSI MAHASISWA ---
   const handleDaftar = async (e) => {
     e.preventDefault();
-    if (!selectedProgram) return alert('Pilih program dulu!');
+    if (!selectedProgram) {
+      alert('Pilih program dari rekomendasi terlebih dahulu!');
+      return;
+    }
     const { error } = await supabase.from('applications').insert([
       { profile_id: sessionUser.id, program_id: selectedProgram, status: 'Menunggu Verifikasi' }
     ]);
@@ -154,6 +159,18 @@ export default function Dashboard() {
     prog.jenis?.toLowerCase().includes(programSearch.toLowerCase())
   );
 });
+
+  // TAMBAHAN: Rekomendasi program untuk Formulir Pendaftaran Mahasiswa
+  const suggestedProgramsForForm = programs.filter((prog) => {
+    const keyword = formProgramSearch.toLowerCase();
+
+    if (!keyword) return false;
+
+    return (
+      prog.judul?.toLowerCase().includes(keyword) ||
+      prog.jenis?.toLowerCase().includes(keyword)
+    );
+  });
 
   if (!sessionUser) return <div style={{ padding: '20px', textAlign: 'center' }}>Memuat sesi...</div>;
 
@@ -253,14 +270,104 @@ export default function Dashboard() {
         ) : (
           <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', marginBottom: '20px' }}>
             <h3 style={{ marginTop: 0, color: '#333', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>Formulir Pendaftaran</h3>
-            <form onSubmit={handleDaftar} style={{ display: 'flex', gap: '10px' }}>
-              <select value={selectedProgram} onChange={(e) => setSelectedProgram(e.target.value)} required style={{ flex: 1, padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}>
-                <option value="" disabled>-- Pilih Program Tersedia --</option>
-                {programs.map(prog => (
-                  <option key={prog.id} value={prog.id}>{prog.judul} ({prog.jenis})</option>
-                ))}
-              </select>
-              <button type="submit" style={{ backgroundColor: '#16a34a', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>Daftar Sekarang</button>
+            <form onSubmit={handleDaftar} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+              <div style={{ flex: 1, position: 'relative' }}>
+                
+                {/* TAMBAHAN: Input pencarian program dengan rekomendasi */}
+                <input
+                  type="text"
+                  placeholder="Ketik nama program..."
+                  value={formProgramSearch}
+                  onChange={(e) => {
+                    setFormProgramSearch(e.target.value);
+                    setSelectedProgram('');
+                    setShowProgramSuggestions(true);
+                  }}
+                  onFocus={() => setShowProgramSuggestions(true)}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    borderRadius: '5px',
+                    border: '1px solid #ccc',
+                    boxSizing: 'border-box'
+                  }}
+                />
+
+                {/* TAMBAHAN: Daftar rekomendasi program */}
+                {showProgramSuggestions && formProgramSearch && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '45px',
+                      left: 0,
+                      right: 0,
+                      backgroundColor: 'white',
+                      border: '1px solid #ccc',
+                      borderRadius: '5px',
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                      zIndex: 999,
+                      maxHeight: '220px',
+                      overflowY: 'auto'
+                    }}
+                  >
+                    {suggestedProgramsForForm.length > 0 ? (
+                      suggestedProgramsForForm.map((prog) => (
+                        <div
+                          key={prog.id}
+                          onClick={() => {
+                            setSelectedProgram(prog.id);
+                            setFormProgramSearch(`${prog.judul} (${prog.jenis})`);
+                            setShowProgramSuggestions(false);
+                          }}
+                          style={{
+                            padding: '10px',
+                            cursor: 'pointer',
+                            borderBottom: '1px solid #eee'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f1f5f9';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'white';
+                          }}
+                        >
+                          <div style={{ fontWeight: 'bold' }}>{prog.judul}</div>
+                          <div style={{ fontSize: '13px', color: '#64748b' }}>
+                            {prog.jenis} • Kuota: {prog.kuota}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{ padding: '10px', color: '#64748b' }}>
+                        Program tidak ditemukan.
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Input tersembunyi agar selectedProgram tetap divalidasi */}
+                <input
+                  type="hidden"
+                  value={selectedProgram}
+                  required
+                  readOnly
+                />
+              </div>
+
+              <button
+                type="submit"
+                style={{
+                  backgroundColor: '#16a34a',
+                  color: 'white',
+                  padding: '10px 20px',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                Daftar Sekarang
+              </button>
             </form>
           </div>
         )}
