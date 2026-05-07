@@ -75,6 +75,22 @@ export default function Dashboard() {
     }
   };
 
+  const handleHapusProgram = async (id) => {
+    if (window.confirm('Yakin ingin menghapus program ini secara permanen?')) {
+      const { error } = await supabase
+        .from('programs')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        alert('Gagal menghapus program: ' + error.message);
+      } else {
+        alert('Program berhasil dihapus permanen!');
+        fetchData(sessionUser); 
+      }
+    }
+  };
+
   const handleUpdateStatus = async (id, statusBaru) => {
     const { error } = await supabase.from('applications').update({ status: statusBaru }).eq('id', id);
     if (!error) fetchData(sessionUser);
@@ -139,6 +155,7 @@ export default function Dashboard() {
   const renderContent = () => {
     
     // HALAMAN 2: PROGRAM MAGANG
+   // HALAMAN 2: PROGRAM MAGANG
     if (activePage === 'program') {
       return (
         <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
@@ -150,9 +167,18 @@ export default function Dashboard() {
                 <h4 style={{ margin: '0 0 10px 0', color: '#1e293b' }}>{prog.judul}</h4>
                 <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Kategori:</strong> {prog.jenis}</p>
                 <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Sisa Kuota:</strong> {prog.kuota} Peserta</p>
+                
+                {/* Tombol Daftar untuk Mahasiswa */}
                 {!isAdmin && (
                   <button onClick={() => { setSelectedProgram(prog.id); setActivePage('dashboard'); }} style={{ marginTop: '15px', backgroundColor: '#0284c7', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', width: '100%' }}>
                     Daftar Program Ini
+                  </button>
+                )}
+
+                {/* Tombol Hapus untuk Admin */}
+                {isAdmin && (
+                  <button onClick={() => handleHapusProgram(prog.id)} style={{ marginTop: '15px', backgroundColor: '#dc2626', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', width: '100%', fontWeight: 'bold' }}>
+                    🗑️ Hapus Program
                   </button>
                 )}
               </div>
