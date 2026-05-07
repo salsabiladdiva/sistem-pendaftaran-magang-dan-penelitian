@@ -6,6 +6,7 @@ export default function Dashboard() {
   const [applications, setApplications] = useState([]);
   const [programs, setPrograms] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [programSearch, setProgramSearch] = useState('');
   const [sessionUser, setSessionUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -131,6 +132,13 @@ export default function Dashboard() {
     return nama.includes(searchQuery.toLowerCase()) || judul.includes(searchQuery.toLowerCase());
   });
 
+  const filteredPrograms = programs.filter((prog) => {
+  return (
+    prog.judul?.toLowerCase().includes(programSearch.toLowerCase()) ||
+    prog.jenis?.toLowerCase().includes(programSearch.toLowerCase())
+  );
+});
+
   if (!sessionUser) return <div style={{ padding: '20px', textAlign: 'center' }}>Memuat sesi...</div>;
 
   // ==========================================
@@ -144,8 +152,23 @@ export default function Dashboard() {
         <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
           <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px', marginTop: 0 }}>Daftar Program Tersedia</h2>
           <p style={{ color: '#666' }}>Berikut adalah daftar program magang dan penelitian yang dibuka pada periode ini.</p>
+          {isAdmin && (
+  <input
+    type="text"
+    placeholder="Cari program..."
+    value={programSearch}
+    onChange={(e) => setProgramSearch(e.target.value)}
+    style={{
+      width: '100%',
+      padding: '10px',
+      marginTop: '15px',
+      borderRadius: '5px',
+      border: '1px solid #ccc'
+    }}
+  />
+)}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
-            {programs.map(prog => (
+            {filteredPrograms.map(prog => (
               <div key={prog.id} style={{ border: '1px solid #e2e8f0', padding: '20px', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
                 <h4 style={{ margin: '0 0 10px 0', color: '#1e293b' }}>{prog.judul}</h4>
                 <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Kategori:</strong> {prog.jenis}</p>
