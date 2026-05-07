@@ -169,7 +169,7 @@ export default function Dashboard() {
         <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
           <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px', marginTop: 0 }}>Daftar Program Tersedia</h2>
           <p style={{ color: '#666' }}>Berikut adalah daftar program magang dan penelitian yang dibuka pada periode ini.</p>
-          {isAdmin && (
+          
   <input
     type="text"
     placeholder="Cari program..."
@@ -183,7 +183,8 @@ export default function Dashboard() {
       border: '1px solid #ccc'
     }}
   />
-)}
+
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
             {filteredPrograms.map(prog => (
               <div key={prog.id} style={{ border: '1px solid #e2e8f0', padding: '20px', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
