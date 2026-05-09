@@ -100,9 +100,9 @@ export default function DetailsPage() {
       <Navbar user={user} />
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white py-12">
+      <div className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white py-10 sm:py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-2">📊 Detail Pendaftaran Lengkap</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">📊 Detail Pendaftaran Lengkap</h1>
           <p className="text-indigo-100">
             Tampilan JOIN dari 4+ tabel: Registrations, Users, Programs, Supervisors
           </p>
@@ -138,7 +138,7 @@ export default function DetailsPage() {
                       <h3 className="text-2xl font-bold text-gray-800">{detail.programs?.title}</h3>
                       <p className="text-gray-600">{detail.programs?.company_name}</p>
                     </div>
-                    <div className={`px-4 py-2 rounded-lg font-semibold text-center ${
+                    <div className={`w-full sm:w-auto px-4 py-2 rounded-lg font-semibold text-center ${
                       detail.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                       detail.status === 'approved' ? 'bg-green-100 text-green-800' :
                       'bg-red-100 text-red-800'
@@ -187,7 +187,7 @@ export default function DetailsPage() {
                     <h4 className="font-bold text-gray-800 mb-3 flex items-center">
                       <span className="mr-2">👨‍🏫</span> Pembimbing Program
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {detail.programs.program_supervisors.map((ps, idx) => (
                         <div key={idx} className="bg-indigo-50 p-4 rounded-lg">
                           <p className="font-semibold text-indigo-900">{ps.supervisors?.name}</p>

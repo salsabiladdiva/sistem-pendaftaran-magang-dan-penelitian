@@ -125,9 +125,9 @@ export default function RegistrationsPage() {
       <Navbar user={user} />
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white py-12">
+      <div className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white py-10 sm:py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-2">📝 Pendaftaran Saya</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">📝 Pendaftaran Saya</h1>
           <p className="text-indigo-100">Kelola dan pantau status pendaftaran Anda</p>
         </div>
       </div>
@@ -156,8 +156,8 @@ export default function RegistrationsPage() {
               <div key={registration.id} className="card hover:shadow-lg transition-all">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <h3 className="text-xl font-bold text-gray-800">
+                    <div className="flex flex-wrap items-center gap-3 mb-3">
+                      <h3 className="text-lg sm:text-xl font-bold text-gray-800">
                         {registration.programs?.title}
                       </h3>
                       <span className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
@@ -171,7 +171,7 @@ export default function RegistrationsPage() {
 
                     <p className="text-gray-600 mb-3">{registration.programs?.company_name}</p>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm text-gray-600 mb-4">
                       <div className="flex items-center">
                         <span className="mr-2">📍</span>{registration.programs?.location}
                       </div>
@@ -199,14 +199,14 @@ export default function RegistrationsPage() {
                     )}
                   </div>
 
-                  <div className="flex gap-2 md:flex-col">
-                    <button className="btn-secondary text-sm py-2 flex-1">
+                  <div className="flex flex-col sm:flex-row md:flex-col gap-2">
+                    <button className="btn-secondary text-sm py-2 w-full">
                       Detail
                     </button>
                     {registration.status === 'pending' && (
                       <button
                         onClick={() => handleSoftDelete(registration.id)}
-                        className="btn-danger text-sm py-2 flex-1"
+                        className="btn-danger text-sm py-2 w-full"
                       >
                         Batalkan
                       </button>
