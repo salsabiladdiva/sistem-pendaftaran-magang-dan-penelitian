@@ -55,8 +55,9 @@ export default function Dashboard() {
       `)
       .order('created_at', { ascending: false });
 
+    // REVISI LOGIKA: Mahasiswa melihat semua riwayatnya (tanpa filter deleted_at)
     if (user.email !== 'admin@gmail.com') {
-      query = query.eq('profile_id', user.id).is('deleted_at', null);
+      query = query.eq('profile_id', user.id);
     }
 
     const { data: appData } = await query;
@@ -89,7 +90,7 @@ export default function Dashboard() {
 
   const handleUpdateStatus = async (id, programId, statusBaru, statusLama) => {
     if (!programId) {
-      alert('⚠️ Gagal: ID Program tidak ditemukan di database!');
+      alert('⚠️ Gagal: ID Program tidak ditemukan!');
       return;
     }
 
@@ -97,36 +98,23 @@ export default function Dashboard() {
     
     if (!error) {
       if (statusBaru === 'Diterima' && statusLama !== 'Diterima') {
-        const { data: program, error: errSelect } = await supabase.from('programs').select('kuota').eq('id', programId).single();
-        
-        if (errSelect) alert("⚠️ Gagal mengecek sisa kuota: " + errSelect.message);
-        else if (program) {
-          const kuotaBaru = parseInt(program.kuota) - 1; 
-          const { error: errUpdate } = await supabase.from('programs').update({ kuota: kuotaBaru }).eq('id', programId);
-          
-          if (errUpdate) alert("⚠️ Gagal memotong kuota: " + errUpdate.message);
-          else alert(`✅ Peserta Diterima! Kuota otomatis dipotong menjadi sisa ${kuotaBaru}`);
+        const { data: program } = await supabase.from('programs').select('kuota').eq('id', programId).single();
+        if (program && program.kuota > 0) {
+          await supabase.from('programs').update({ kuota: parseInt(program.kuota) - 1 }).eq('id', programId);
         }
       } 
       else if (statusLama === 'Diterima' && statusBaru !== 'Diterima') {
-        const { data: program, error: errSelect } = await supabase.from('programs').select('kuota').eq('id', programId).single();
-        
-        if (errSelect) alert("⚠️ Gagal mengecek sisa kuota: " + errSelect.message);
-        else if (program) {
-          const kuotaBaru = parseInt(program.kuota) + 1; 
-          const { error: errUpdate } = await supabase.from('programs').update({ kuota: kuotaBaru }).eq('id', programId);
-          
-          if (errUpdate) alert("⚠️ Gagal mengembalikan kuota: " + errUpdate.message);
-          else alert(`🔄 Dibatalkan! Kuota otomatis dikembalikan menjadi sisa ${kuotaBaru}`);
+        const { data: program } = await supabase.from('programs').select('kuota').eq('id', programId).single();
+        if (program) {
+          await supabase.from('programs').update({ kuota: parseInt(program.kuota) + 1 }).eq('id', programId);
         }
       }
       fetchData(sessionUser);
     } else {
-      alert('❌ Gagal mengubah status: ' + error.message);
+      alert('Gagal update status: ' + error.message);
     }
   };
 
-  // UBAH TEKS KONFIRMASI DI SINI
   const handleSoftDelete = async (id) => {
     if (window.confirm('Pindahkan data pendaftaran ini ke Archive?')) {
       const { error } = await supabase.from('applications').update({ deleted_at: new Date() }).eq('id', id);
@@ -141,9 +129,8 @@ export default function Dashboard() {
     }
   };
 
-  // UBAH TEKS KONFIRMASI DI SINI
   const handleHardDelete = async (id) => {
-    if (window.confirm('⚠️ PERINGATAN KERAS! ⚠️\nData akan dihapus permanen dari database! Lanjutkan?')) {
+    if (window.confirm('⚠️ PERINGATAN! ⚠️\nData akan dihapus permanen! Lanjutkan?')) {
       const { error } = await supabase.from('applications').delete().eq('id', id);
       if (!error) fetchData(sessionUser);
     }
@@ -152,7 +139,7 @@ export default function Dashboard() {
   const handleDaftar = async (e) => {
     e.preventDefault();
     if (!selectedProgram) {
-      alert('Silakan pilih program dari rekomendasi terlebih dahulu!');
+      alert('Pilih program terlebih dahulu!');
       return;
     }
     const { error } = await supabase.from('applications').insert([
@@ -172,7 +159,11 @@ export default function Dashboard() {
   };
 
   const filteredData = applications.filter((app) => {
-    const isTrashMatch = isAdmin && viewMode === 'trash' ? app.deleted_at !== null : app.deleted_at === null;
+    // REVISI LOGIKA: Admin memfilter tab, Mahasiswa melihat semua
+    const isTrashMatch = isAdmin 
+      ? (viewMode === 'trash' ? app.deleted_at !== null : app.deleted_at === null)
+      : true;
+
     if (!isTrashMatch) return false;
 
     const nama = app.profiles?.nama_lengkap?.toLowerCase() || '';
@@ -226,15 +217,14 @@ export default function Dashboard() {
             <h3>Bagi Mahasiswa:</h3>
             <ol>
               <li>Pilih menu <b>Program Magang</b> untuk melihat daftar program.</li>
-              <li>Daftar melalui formulir di halaman <b>Dashboard</b> dengan mengetik nama program.</li>
+              <li>Daftar melalui formulir di halaman <b>Dashboard</b>.</li>
               <li>Pantau status di tabel Riwayat Pendaftaran.</li>
             </ol>
             <h3>Bagi Administrator:</h3>
             <ol>
-              <li>Gunakan <b>Dashboard</b> untuk menambah program dan verifikasi pendaftar.</li>
-              <li>Saat Anda mengubah status menjadi "Diterima", kuota program akan otomatis berkurang.</li>
-              <li>Fitur <b>Archive</b> memindahkan data agar tidak tampil di daftar utama.</li>
-              <li>Fitur <b>Hapus Permanen</b> menghapus data permanen dari sistem.</li>
+              <li>Gunakan <b>Dashboard</b> untuk mengelola program dan verifikasi.</li>
+              <li>Fitur <b>Archive</b> menyembunyikan data dari daftar aktif Admin.</li>
+              <li>Fitur <b>Hapus Permanen</b> menghapus data sepenuhnya.</li>
             </ol>
           </div>
         </div>
@@ -293,7 +283,6 @@ export default function Dashboard() {
               {isAdmin && (
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button onClick={() => setViewMode('active')} style={{ padding: '8px 15px', border: 'none', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', backgroundColor: viewMode === 'active' ? '#e0f2fe' : '#f1f5f9', color: viewMode === 'active' ? '#0284c7' : '#64748b' }}>🟢 Data Aktif</button>
-                  
                   <button onClick={() => setViewMode('trash')} style={{ padding: '8px 15px', border: 'none', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', backgroundColor: viewMode === 'trash' ? '#fee2e2' : '#f1f5f9', color: viewMode === 'trash' ? '#dc2626' : '#64748b' }}>📦 Archive</button>
                 </div>
               )}
@@ -331,7 +320,6 @@ export default function Dashboard() {
                       </select>
                     ) : (
                       <span style={{ padding: '5px 10px', borderRadius: '15px', fontSize: '13px', fontWeight: 'bold', backgroundColor: app.status === 'Diterima' ? '#dcfce7' : app.status === 'Ditolak' ? '#fee2e2' : '#fef9c3', color: app.status === 'Diterima' ? '#166534' : app.status === 'Ditolak' ? '#991b1b' : '#854d0e' }}>
-                        {/* UBAH TEKS STATUS SAAT DI TONG SAMPAH */}
                         {viewMode === 'trash' ? 'Diarsipkan' : app.status}
                       </span>
                     )}
@@ -339,12 +327,10 @@ export default function Dashboard() {
                   {isAdmin && (
                     <td style={{ padding: '12px', textAlign: 'center' }}>
                       {viewMode === 'active' ? (
-                        
                         <button onClick={() => handleSoftDelete(app.id)} style={{ backgroundColor: '#f59e0b', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Archive</button>
                       ) : (
                         <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
                           <button onClick={() => handleRestore(app.id)} style={{ backgroundColor: '#10b981', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Restore</button>
-                          {/* UBAH TOMBOL HARD DELETE */}
                           <button onClick={() => handleHardDelete(app.id)} style={{ backgroundColor: '#b91c1c', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Hapus Permanen</button>
                         </div>
                       )}
