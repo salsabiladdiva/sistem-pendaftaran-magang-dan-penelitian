@@ -13,6 +13,9 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // --- STATE BARU: Profil User ---
+  const [userProfile, setUserProfile] = useState(null);
+
   // --- STATE UNTUK NAVBAR REAL (SPA Routing) ---
   const [activePage, setActivePage] = useState('dashboard'); // 'dashboard', 'program', atau 'panduan'
 
@@ -41,11 +44,20 @@ export default function Dashboard() {
   const fetchData = async (user) => {
     setLoading(true);
     
-    // Ambil daftar program
+    // 1. Ambil data nama lengkap user yang sedang login dari tabel profiles
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('nama_lengkap')
+      .eq('id', user.id)
+      .single();
+      
+    if (profileData) setUserProfile(profileData);
+
+    // 2. Ambil daftar program
     const { data: programData } = await supabase.from('programs').select('*').order('created_at', { ascending: false });
     if (programData) setPrograms(programData);
 
-    // KETENTUAN 7: Query JOIN 3 Tabel
+    // 3. KETENTUAN 7: Query JOIN 3 Tabel (applications + profiles + programs)
     let query = supabase
       .from('applications')
       .select(`
@@ -55,7 +67,7 @@ export default function Dashboard() {
       `)
       .order('created_at', { ascending: false });
 
-    // FILTER AKTOR
+    // FILTER AKTOR: Mahasiswa hanya melihat datanya sendiri yang belum dihapus
     if (user.email !== 'admin@gmail.com') {
       query = query.eq('profile_id', user.id).is('deleted_at', null);
     }
@@ -80,14 +92,9 @@ export default function Dashboard() {
 
   const handleHapusProgram = async (id) => {
     if (window.confirm('Yakin ingin menghapus program ini secara permanen?')) {
-      const { error } = await supabase
-        .from('programs')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        alert('Gagal menghapus program: ' + error.message);
-      } else {
+      const { error } = await supabase.from('programs').delete().eq('id', id);
+      if (error) alert('Gagal menghapus program: ' + error.message);
+      else {
         alert('Program berhasil dihapus permanen!');
         fetchData(sessionUser); 
       }
@@ -100,7 +107,7 @@ export default function Dashboard() {
   };
 
   const handleSoftDelete = async (id) => {
-    if (window.confirm('Pindahkan data ini ke Tong Sampah?')) {
+    if (window.confirm('Pindahkan data pendaftaran ini ke Tong Sampah?')) {
       const { error } = await supabase.from('applications').update({ deleted_at: new Date() }).eq('id', id);
       if (!error) fetchData(sessionUser);
     }
@@ -114,7 +121,7 @@ export default function Dashboard() {
   };
 
   const handleHardDelete = async (id) => {
-    if (window.confirm('⚠️ PERINGATAN KERAS! ⚠️\nApakah Anda YAKIN ingin melakukan HARD DELETE?')) {
+    if (window.confirm('⚠️ PERINGATAN KERAS! ⚠️\nData akan dihapus permanen dari database! Lanjutkan?')) {
       const { error } = await supabase.from('applications').delete().eq('id', id);
       if (!error) fetchData(sessionUser);
     }
@@ -124,7 +131,7 @@ export default function Dashboard() {
   const handleDaftar = async (e) => {
     e.preventDefault();
     if (!selectedProgram) {
-      alert('Pilih program dari rekomendasi terlebih dahulu!');
+      alert('Silakan pilih program dari rekomendasi terlebih dahulu!');
       return;
     }
     const { error } = await supabase.from('applications').insert([
@@ -134,7 +141,7 @@ export default function Dashboard() {
     else {
       alert('Berhasil Mendaftar!');
       fetchData(sessionUser); 
-      setActivePage('dashboard'); // Kembali ke dashboard setelah daftar
+      setActivePage('dashboard'); 
     }
   };
 
@@ -143,7 +150,7 @@ export default function Dashboard() {
     navigate('/login');
   };
 
-  // --- PENCARIAN ---
+  // --- FILTER & SEARCH ---
   const filteredData = applications.filter((app) => {
     const isTrashMatch = isAdmin && viewMode === 'trash' ? app.deleted_at !== null : app.deleted_at === null;
     if (!isTrashMatch) return false;
@@ -153,23 +160,15 @@ export default function Dashboard() {
     return nama.includes(searchQuery.toLowerCase()) || judul.includes(searchQuery.toLowerCase());
   });
 
-  const filteredPrograms = programs.filter((prog) => {
-  return (
+  const filteredPrograms = programs.filter((prog) => (
     prog.judul?.toLowerCase().includes(programSearch.toLowerCase()) ||
     prog.jenis?.toLowerCase().includes(programSearch.toLowerCase())
-  );
-});
+  ));
 
-  // TAMBAHAN: Rekomendasi program untuk Formulir Pendaftaran Mahasiswa
   const suggestedProgramsForForm = programs.filter((prog) => {
     const keyword = formProgramSearch.toLowerCase();
-
     if (!keyword) return false;
-
-    return (
-      prog.judul?.toLowerCase().includes(keyword) ||
-      prog.jenis?.toLowerCase().includes(keyword)
-    );
+    return prog.judul?.toLowerCase().includes(keyword) || prog.jenis?.toLowerCase().includes(keyword);
   });
 
   if (!sessionUser) return <div style={{ padding: '20px', textAlign: 'center' }}>Memuat sesi...</div>;
@@ -179,48 +178,23 @@ export default function Dashboard() {
   // ==========================================
   const renderContent = () => {
     
-    // HALAMAN 2: PROGRAM MAGANG
-   // HALAMAN 2: PROGRAM MAGANG
+    // HALAMAN 2: DAFTAR PROGRAM
     if (activePage === 'program') {
       return (
         <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
           <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px', marginTop: 0 }}>Daftar Program Tersedia</h2>
-          <p style={{ color: '#666' }}>Berikut adalah daftar program magang dan penelitian yang dibuka pada periode ini.</p>
-          
-  <input
-    type="text"
-    placeholder="Cari program..."
-    value={programSearch}
-    onChange={(e) => setProgramSearch(e.target.value)}
-    style={{
-      width: '100%',
-      padding: '10px',
-      marginTop: '15px',
-      borderRadius: '5px',
-      border: '1px solid #ccc'
-    }}
-  />
-
-
+          <input type="text" placeholder="Cari program..." value={programSearch} onChange={(e) => setProgramSearch(e.target.value)} style={{ width: '100%', padding: '10px', marginTop: '15px', borderRadius: '5px', border: '1px solid #ccc' }} />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
             {filteredPrograms.map(prog => (
               <div key={prog.id} style={{ border: '1px solid #e2e8f0', padding: '20px', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
                 <h4 style={{ margin: '0 0 10px 0', color: '#1e293b' }}>{prog.judul}</h4>
                 <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Kategori:</strong> {prog.jenis}</p>
                 <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Sisa Kuota:</strong> {prog.kuota} Peserta</p>
-                
-                {/* Tombol Daftar untuk Mahasiswa */}
                 {!isAdmin && (
-                  <button onClick={() => { setSelectedProgram(prog.id); setActivePage('dashboard'); }} style={{ marginTop: '15px', backgroundColor: '#0284c7', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', width: '100%' }}>
-                    Daftar Program Ini
-                  </button>
+                  <button onClick={() => { setSelectedProgram(prog.id); setFormProgramSearch(`${prog.judul} (${prog.jenis})`); setActivePage('dashboard'); }} style={{ marginTop: '15px', backgroundColor: '#0284c7', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', width: '100%' }}>Daftar Program Ini</button>
                 )}
-
-                {/* Tombol Hapus untuk Admin */}
                 {isAdmin && (
-                  <button onClick={() => handleHapusProgram(prog.id)} style={{ marginTop: '15px', backgroundColor: '#dc2626', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', width: '100%', fontWeight: 'bold' }}>
-                    🗑️ Hapus Program
-                  </button>
+                  <button onClick={() => handleHapusProgram(prog.id)} style={{ marginTop: '15px', backgroundColor: '#dc2626', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', width: '100%', fontWeight: 'bold' }}>🗑️ Hapus Program</button>
                 )}
               </div>
             ))}
@@ -237,24 +211,34 @@ export default function Dashboard() {
           <div style={{ lineHeight: '1.6', color: '#334155' }}>
             <h3>Bagi Mahasiswa:</h3>
             <ol>
-              <li>Pilih menu <b>Program Magang</b> untuk melihat daftar program yang tersedia.</li>
-              <li>Klik tombol <b>Daftar</b> pada program yang diminati, atau daftar melalui formulir di halaman <b>Dashboard</b>.</li>
-              <li>Pantau status pendaftaran Anda secara berkala di tabel Riwayat Pendaftaran.</li>
+              <li>Pilih menu <b>Program Magang</b> untuk melihat daftar program.</li>
+              <li>Daftar melalui formulir di halaman <b>Dashboard</b> dengan mengetik nama program.</li>
+              <li>Pantau status di tabel Riwayat Pendaftaran.</li>
             </ol>
             <h3>Bagi Administrator:</h3>
             <ol>
-              <li>Gunakan halaman <b>Dashboard</b> untuk menambah program baru ke dalam sistem.</li>
-              <li>Lakukan verifikasi pendaftar dengan mengubah status pada kolom tabel (Diterima/Ditolak).</li>
-              <li>Gunakan fitur <b>Soft Delete</b> untuk memindahkan data yang salah ke Tong Sampah. Anda bisa memulihkan data tersebut kapan saja.</li>
+              <li>Gunakan <b>Dashboard</b> untuk menambah program dan verifikasi pendaftar.</li>
+              <li>Fitur <b>Soft Delete</b> memindahkan data ke Tong Sampah (bisa dipulihkan).</li>
+              <li>Fitur <b>Hard Delete</b> menghapus data permanen.</li>
             </ol>
           </div>
         </div>
       );
     }
 
-    // HALAMAN 1 (DEFAULT): DASHBOARD (Semua CRUD dan Tabel ada di sini)
+    // HALAMAN 1 (DEFAULT): DASHBOARD
     return (
       <>
+        {/* --- KOTAK SAPAAN PERSONAL --- */}
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', marginBottom: '20px', borderLeft: isAdmin ? '5px solid #0f172a' : '5px solid #0284c7' }}>
+          <h2 style={{ margin: '0 0 5px 0', color: '#1e293b' }}>
+            Selamat datang, {userProfile ? userProfile.nama_lengkap : 'Pengguna'}! 👋
+          </h2>
+          <p style={{ margin: 0, color: '#64748b' }}>
+            Anda masuk sebagai <span style={{ fontWeight: 'bold', color: isAdmin ? '#dc2626' : '#0284c7' }}>{isAdmin ? 'Administrator' : 'Mahasiswa'}</span>.
+          </p>
+        </div>
+
         {isAdmin ? (
           <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', marginBottom: '20px' }}>
             <h3 style={{ marginTop: 0, color: '#333', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>Buat Program Baru</h3>
@@ -273,102 +257,18 @@ export default function Dashboard() {
             <h3 style={{ marginTop: 0, color: '#333', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>Formulir Pendaftaran</h3>
             <form onSubmit={handleDaftar} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
               <div style={{ flex: 1, position: 'relative' }}>
-                
-                {/* TAMBAHAN: Input pencarian program dengan rekomendasi */}
-                <input
-                  type="text"
-                  placeholder="Ketik nama program..."
-                  value={formProgramSearch}
-                  onChange={(e) => {
-                    setFormProgramSearch(e.target.value);
-                    setSelectedProgram('');
-                    setShowProgramSuggestions(true);
-                  }}
-                  onFocus={() => setShowProgramSuggestions(true)}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    borderRadius: '5px',
-                    border: '1px solid #ccc',
-                    boxSizing: 'border-box'
-                  }}
-                />
-
-                {/* TAMBAHAN: Daftar rekomendasi program */}
+                <input type="text" placeholder="Ketik nama program..." value={formProgramSearch} onChange={(e) => { setFormProgramSearch(e.target.value); setSelectedProgram(''); setShowProgramSuggestions(true); }} onFocus={() => setShowProgramSuggestions(true)} style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }} />
                 {showProgramSuggestions && formProgramSearch && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '45px',
-                      left: 0,
-                      right: 0,
-                      backgroundColor: 'white',
-                      border: '1px solid #ccc',
-                      borderRadius: '5px',
-                      boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                      zIndex: 999,
-                      maxHeight: '220px',
-                      overflowY: 'auto'
-                    }}
-                  >
-                    {suggestedProgramsForForm.length > 0 ? (
-                      suggestedProgramsForForm.map((prog) => (
-                        <div
-                          key={prog.id}
-                          onClick={() => {
-                            setSelectedProgram(prog.id);
-                            setFormProgramSearch(`${prog.judul} (${prog.jenis})`);
-                            setShowProgramSuggestions(false);
-                          }}
-                          style={{
-                            padding: '10px',
-                            cursor: 'pointer',
-                            borderBottom: '1px solid #eee'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#f1f5f9';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'white';
-                          }}
-                        >
-                          <div style={{ fontWeight: 'bold' }}>{prog.judul}</div>
-                          <div style={{ fontSize: '13px', color: '#64748b' }}>
-                            {prog.jenis} • Kuota: {prog.kuota}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div style={{ padding: '10px', color: '#64748b' }}>
-                        Program tidak ditemukan.
+                  <div style={{ position: 'absolute', top: '45px', left: 0, right: 0, backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '5px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', zIndex: 999, maxHeight: '200px', overflowY: 'auto' }}>
+                    {suggestedProgramsForForm.length > 0 ? suggestedProgramsForForm.map((prog) => (
+                      <div key={prog.id} onClick={() => { setSelectedProgram(prog.id); setFormProgramSearch(`${prog.judul} (${prog.jenis})`); setShowProgramSuggestions(false); }} style={{ padding: '10px', cursor: 'pointer', borderBottom: '1px solid #eee' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}>
+                        <b>{prog.judul}</b> <br/><small>{prog.jenis} • Kuota: {prog.kuota}</small>
                       </div>
-                    )}
+                    )) : <div style={{ padding: '10px', color: '#64748b' }}>Program tidak ditemukan.</div>}
                   </div>
                 )}
-
-                {/* Input tersembunyi agar selectedProgram tetap divalidasi */}
-                <input
-                  type="hidden"
-                  value={selectedProgram}
-                  required
-                  readOnly
-                />
               </div>
-
-              <button
-                type="submit"
-                style={{
-                  backgroundColor: '#16a34a',
-                  color: 'white',
-                  padding: '10px 20px',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold'
-                }}
-              >
-                Daftar Sekarang
-              </button>
+              <button type="submit" style={{ backgroundColor: '#16a34a', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>Daftar Sekarang</button>
             </form>
           </div>
         )}
@@ -404,23 +304,19 @@ export default function Dashboard() {
                   <td style={{ padding: '12px' }}>{app.profiles?.nama_lengkap}</td>
                   <td style={{ padding: '12px', fontWeight: 'bold' }}>{app.programs?.judul}</td>
                   <td style={{ padding: '12px' }}>{app.programs?.jenis}</td>
-                  
-                  {isAdmin && viewMode === 'active' ? (
-                    <td style={{ padding: '12px' }}>
+                  <td style={{ padding: '12px' }}>
+                    {isAdmin && viewMode === 'active' ? (
                       <select value={app.status} onChange={(e) => handleUpdateStatus(app.id, e.target.value)} style={{ padding: '5px' }}>
                         <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
                         <option value="Diterima">Diterima</option>
                         <option value="Ditolak">Ditolak</option>
                       </select>
-                    </td>
-                  ) : (
-                    <td style={{ padding: '12px' }}>
+                    ) : (
                       <span style={{ padding: '5px 10px', borderRadius: '15px', fontSize: '13px', fontWeight: 'bold', backgroundColor: app.status === 'Diterima' ? '#dcfce7' : app.status === 'Ditolak' ? '#fee2e2' : '#fef9c3', color: app.status === 'Diterima' ? '#166534' : app.status === 'Ditolak' ? '#991b1b' : '#854d0e' }}>
                         {viewMode === 'trash' ? 'Dihapus' : app.status}
                       </span>
-                    </td>
-                  )}
-
+                    )}
+                  </td>
                   {isAdmin && (
                     <td style={{ padding: '12px', textAlign: 'center' }}>
                       {viewMode === 'active' ? (
@@ -434,9 +330,7 @@ export default function Dashboard() {
                     </td>
                   )}
                 </tr>
-              )) : (
-                !loading && <tr><td colSpan={isAdmin ? "5" : "4"} style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>{viewMode === 'trash' ? 'Tong sampah kosong.' : 'Belum ada data pendaftaran.'}</td></tr>
-              )}
+              )) : !loading && <tr><td colSpan={isAdmin ? "5" : "4"} style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>{viewMode === 'trash' ? 'Tong sampah kosong.' : 'Belum ada data pendaftaran.'}</td></tr>}
             </tbody>
           </table>
         </div>
@@ -446,31 +340,23 @@ export default function Dashboard() {
 
   return (
     <div style={{ backgroundColor: '#f0f2f5', minHeight: '100vh', fontFamily: 'Arial' }}>
-      
-      {/* NAVBAR */}
       <nav style={{ backgroundColor: isAdmin ? '#0f172a' : '#0284c7', padding: '15px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white', position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
           <h2 style={{ margin: 0, fontSize: '20px' }}>Portal Magang</h2>
-          
-          {/* MENU NAVIGASI (Dengan sistem State) */}
           <div style={{ display: 'flex', gap: '20px', fontSize: '15px' }}>
             <a href="#" onClick={(e) => { e.preventDefault(); setActivePage('dashboard'); }} style={{ textDecoration: 'none', fontWeight: 'bold', color: activePage === 'dashboard' ? '#fff' : 'rgba(255,255,255,0.6)', borderBottom: activePage === 'dashboard' ? '2px solid white' : 'none', paddingBottom: '3px' }}>Dashboard</a>
             <a href="#" onClick={(e) => { e.preventDefault(); setActivePage('program'); }} style={{ textDecoration: 'none', fontWeight: 'bold', color: activePage === 'program' ? '#fff' : 'rgba(255,255,255,0.6)', borderBottom: activePage === 'program' ? '2px solid white' : 'none', paddingBottom: '3px' }}>Program Magang</a>
             <a href="#" onClick={(e) => { e.preventDefault(); setActivePage('panduan'); }} style={{ textDecoration: 'none', fontWeight: 'bold', color: activePage === 'panduan' ? '#fff' : 'rgba(255,255,255,0.6)', borderBottom: activePage === 'panduan' ? '2px solid white' : 'none', paddingBottom: '3px' }}>Panduan</a>
           </div>
         </div>
-
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <span style={{ fontSize: '13px', background: 'rgba(255,255,255,0.2)', padding: '6px 12px', borderRadius: '20px' }}>Akses: {isAdmin ? 'Administrator' : 'Mahasiswa'}</span>
           <button onClick={handleLogout} style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>Logout</button>
         </div>
       </nav>
-
-      {/* AREA KONTEN UTAMA */}
       <div style={{ maxWidth: '1100px', margin: '30px auto', padding: '0 20px' }}>
         {renderContent()}
       </div>
-
     </div>
   );
 }
