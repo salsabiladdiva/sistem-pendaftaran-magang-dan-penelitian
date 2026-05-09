@@ -26,6 +26,9 @@ export default function Dashboard() {
   const [judulBaru, setJudulBaru] = useState('');
   const [jenisBaru, setJenisBaru] = useState('Magang');
   const [kuotaBaru, setKuotaBaru] = useState(5);
+  const [editingProgram, setEditingProgram] = useState(null);
+const [editJudul, setEditJudul] = useState('');
+const [editKuota, setEditKuota] = useState('');
 
   const isAdmin = sessionUser?.email === 'admin@gmail.com';
 
@@ -77,6 +80,19 @@ export default function Dashboard() {
       fetchData(sessionUser); 
     }
   };
+const handleEditProgram = async (e) => {
+  e.preventDefault();
+  const { error } = await supabase
+    .from('programs')
+    .update({ judul: editJudul, kuota: Number(editKuota) })
+    .eq('id', editingProgram.id);
+  if (error) alert('Gagal mengupdate: ' + error.message);
+  else {
+    alert('Program berhasil diupdate!');
+    setEditingProgram(null);
+    fetchData(sessionUser);
+  }
+};
 
   const handleHapusProgram = async (id) => {
     if (window.confirm('Yakin ingin menghapus program ini secara permanen?')) {
@@ -174,9 +190,7 @@ export default function Dashboard() {
 
   if (!sessionUser) return <div style={{ padding: '20px', textAlign: 'center' }}>Memuat sesi...</div>;
 
-  // ==========================================
-  // RENDER KONTEN BERDASARKAN NAVBAR YANG AKTIF
-  // ==========================================
+
   const renderContent = () => {
     
     // HALAMAN 2: PROGRAM MAGANG
@@ -201,7 +215,6 @@ export default function Dashboard() {
     }}
   />
 
-
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
             {filteredPrograms.map(prog => (
               <div key={prog.id} style={{ border: '1px solid #e2e8f0', padding: '20px', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
@@ -216,15 +229,65 @@ export default function Dashboard() {
                   </button>
                 )}
 
-                {/* Tombol Hapus untuk Admin */}
+                 {/* Tombol Edit & Hapus untuk Admin */}
                 {isAdmin && (
-                  <button onClick={() => handleHapusProgram(prog.id)} style={{ marginTop: '15px', backgroundColor: '#dc2626', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', width: '100%', fontWeight: 'bold' }}>
-                    🗑️ Hapus Program
-                  </button>
+                  <div style={{ marginTop: '15px', display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => { setEditingProgram(prog); setEditJudul(prog.judul); setEditKuota(prog.kuota); }}
+                      style={{ flex: 1, backgroundColor: '#f59e0b', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      onClick={() => handleHapusProgram(prog.id)}
+                      style={{ flex: 1, backgroundColor: '#dc2626', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+                    >
+                      🗑️ Hapus
+                    </button>
+                  </div>
                 )}
               </div>
             ))}
           </div>
+          {/* Modal Edit Program */}
+          {editingProgram && (
+            <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '10px', width: '400px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+                <h3 style={{ marginTop: 0, borderBottom: '2px solid #eee', paddingBottom: '10px' }}>✏️ Edit Program</h3>
+                <form onSubmit={handleEditProgram}>
+                  <div style={{ marginBottom: '15px' }}>
+                    <label style={{ fontSize: '13px', color: '#64748b', display: 'block', marginBottom: '5px' }}>Judul Program</label>
+                    <input
+                      type="text"
+                      value={editJudul}
+                      onChange={(e) => setEditJudul(e.target.value)}
+                      required
+                      style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: '20px' }}>
+                    <label style={{ fontSize: '13px', color: '#64748b', display: 'block', marginBottom: '5px' }}>Kuota Peserta</label>
+                    <input
+                      type="number"
+                      value={editKuota}
+                      onChange={(e) => setEditKuota(e.target.value)}
+                      min="1"
+                      required
+                      style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button type="submit" style={{ flex: 1, backgroundColor: '#2563eb', color: 'white', padding: '10px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
+                      💾 Simpan
+                    </button>
+                    <button type="button" onClick={() => setEditingProgram(null)} style={{ flex: 1, backgroundColor: '#f1f5f9', color: '#64748b', padding: '10px', border: '1px solid #e2e8f0', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
+                      Batal
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
