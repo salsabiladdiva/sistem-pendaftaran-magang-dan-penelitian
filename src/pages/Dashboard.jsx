@@ -187,12 +187,12 @@ export default function Dashboard() {
   const renderContent = () => {
     if (activePage === 'program') {
       return (
-        <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
+        <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }} className="dashboard-card">
           <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px', marginTop: 0 }}>Daftar Program Tersedia</h2>
           <input type="text" placeholder="Cari program..." value={programSearch} onChange={(e) => setProgramSearch(e.target.value)} style={{ width: '100%', padding: '10px', marginTop: '15px', borderRadius: '5px', border: '1px solid #ccc' }} />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }} className="dashboard-program-grid">
             {filteredPrograms.map(prog => (
-              <div key={prog.id} style={{ border: '1px solid #e2e8f0', padding: '20px', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
+              <div key={prog.id} style={{ border: '1px solid #e2e8f0', padding: '20px', borderRadius: '8px', backgroundColor: '#f8fafc' }} className="dashboard-card">
                 <h4 style={{ margin: '0 0 10px 0', color: '#1e293b' }}>{prog.judul}</h4>
                 <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Kategori:</strong> {prog.jenis}</p>
                 <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Sisa Kuota:</strong> {prog.kuota} Peserta</p>
@@ -211,7 +211,7 @@ export default function Dashboard() {
 
     if (activePage === 'panduan') {
       return (
-        <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
+        <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }} className="dashboard-card">
           <h2 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px', marginTop: 0 }}>Buku Panduan Sistem</h2>
           <div style={{ lineHeight: '1.6', color: '#334155' }}>
             <h3>Bagi Mahasiswa:</h3>
@@ -233,7 +233,7 @@ export default function Dashboard() {
 
     return (
       <>
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', marginBottom: '20px', borderLeft: isAdmin ? '5px solid #0f172a' : '5px solid #0284c7' }}>
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', marginBottom: '20px', borderLeft: isAdmin ? '5px solid #0f172a' : '5px solid #0284c7' }} className="dashboard-card">
           <h2 style={{ margin: '0 0 5px 0', color: '#1e293b' }}>
             Selamat datang, {userProfile ? userProfile.nama_lengkap : 'Pengguna'}! 👋
           </h2>
@@ -243,22 +243,22 @@ export default function Dashboard() {
         </div>
 
         {isAdmin ? (
-          <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', marginBottom: '20px' }}>
+          <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', marginBottom: '20px' }} className="dashboard-card">
             <h3 style={{ marginTop: 0, color: '#333', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>Buat Program Baru</h3>
-            <form onSubmit={handleTambahProgram} style={{ display: 'flex', gap: '10px' }}>
+            <form onSubmit={handleTambahProgram} style={{ display: 'flex', gap: '10px' }} className="dashboard-form-row">
               <input type="text" placeholder="Judul Program" value={judulBaru} onChange={(e) => setJudulBaru(e.target.value)} required style={{ flex: 2, padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }} />
               <select value={jenisBaru} onChange={(e) => setJenisBaru(e.target.value)} style={{ flex: 1, padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}>
                 <option value="Magang">Magang</option>
                 <option value="Penelitian">Penelitian</option>
               </select>
-              <input type="number" placeholder="Kuota" value={kuotaBaru} onChange={(e) => setKuotaBaru(e.target.value)} min="1" required style={{ width: '80px', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }} />
-              <button type="submit" style={{ backgroundColor: '#2563eb', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>Simpan</button>
+              <input type="number" placeholder="Kuota" value={kuotaBaru} onChange={(e) => setKuotaBaru(e.target.value)} min="1" required style={{ width: '80px', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }} className="dashboard-input-compact" />
+              <button type="submit" style={{ backgroundColor: '#2563eb', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }} className="dashboard-form-button">Simpan</button>
             </form>
           </div>
         ) : (
-          <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', marginBottom: '20px' }}>
+          <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', marginBottom: '20px' }} className="dashboard-card">
             <h3 style={{ marginTop: 0, color: '#333', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>Formulir Pendaftaran</h3>
-            <form onSubmit={handleDaftar} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+            <form onSubmit={handleDaftar} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }} className="dashboard-form-row">
               <div style={{ flex: 1, position: 'relative' }}>
                 <input type="text" placeholder="Ketik nama program..." value={formProgramSearch} onChange={(e) => { setFormProgramSearch(e.target.value); setSelectedProgram(''); setShowProgramSuggestions(true); }} onFocus={() => setShowProgramSuggestions(true)} style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }} />
                 {showProgramSuggestions && formProgramSearch && (
@@ -271,26 +271,27 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
-              <button type="submit" style={{ backgroundColor: '#16a34a', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>Daftar Sekarang</button>
+              <button type="submit" style={{ backgroundColor: '#16a34a', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }} className="dashboard-form-button">Daftar Sekarang</button>
             </form>
           </div>
         )}
 
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }} className="dashboard-card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }} className="dashboard-table-header">
             <div>
               <h3 style={{ margin: '0 0 10px 0' }}>{isAdmin ? 'Manajemen Data Pendaftar' : 'Riwayat Pendaftaran Saya'}</h3>
               {isAdmin && (
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '10px' }} className="dashboard-view-toggle">
                   <button onClick={() => setViewMode('active')} style={{ padding: '8px 15px', border: 'none', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', backgroundColor: viewMode === 'active' ? '#e0f2fe' : '#f1f5f9', color: viewMode === 'active' ? '#0284c7' : '#64748b' }}>🟢 Data Aktif</button>
                   <button onClick={() => setViewMode('trash')} style={{ padding: '8px 15px', border: 'none', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', backgroundColor: viewMode === 'trash' ? '#fee2e2' : '#f1f5f9', color: viewMode === 'trash' ? '#dc2626' : '#64748b' }}>📦 Archive</button>
                 </div>
               )}
             </div>
-            <input type="text" placeholder="Cari nama/program..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ padding: '10px', width: '250px', borderRadius: '5px', border: '1px solid #ccc' }} />
+            <input type="text" placeholder="Cari nama/program..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ padding: '10px', width: '250px', borderRadius: '5px', border: '1px solid #ccc' }} className="dashboard-search-input" />
           </div>
 
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <div className="dashboard-table-wrapper">
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid #cbd5e1' }}>
                 <th style={{ padding: '12px' }}>Nama Peserta</th>
@@ -329,7 +330,7 @@ export default function Dashboard() {
                       {viewMode === 'active' ? (
                         <button onClick={() => handleSoftDelete(app.id)} style={{ backgroundColor: '#f59e0b', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Archive</button>
                       ) : (
-                        <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }} className="dashboard-action-group">
                           <button onClick={() => handleRestore(app.id)} style={{ backgroundColor: '#10b981', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Restore</button>
                           <button onClick={() => handleHardDelete(app.id)} style={{ backgroundColor: '#b91c1c', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Hapus Permanen</button>
                         </div>
@@ -339,29 +340,30 @@ export default function Dashboard() {
                 </tr>
               )) : !loading && <tr><td colSpan={isAdmin ? "5" : "4"} style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>{viewMode === 'trash' ? 'Archive kosong.' : 'Belum ada data pendaftaran.'}</td></tr>}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       </>
     );
   };
 
   return (
-    <div style={{ backgroundColor: '#f0f2f5', minHeight: '100vh', fontFamily: 'Arial' }}>
-      <nav style={{ backgroundColor: isAdmin ? '#0f172a' : '#0284c7', padding: '15px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white', position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
+    <div style={{ backgroundColor: '#f0f2f5', minHeight: '100vh', fontFamily: 'Arial' }} className="dashboard-root">
+      <nav style={{ backgroundColor: isAdmin ? '#0f172a' : '#0284c7', padding: '15px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white', position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} className="dashboard-nav">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }} className="dashboard-nav-left">
           <h2 style={{ margin: 0, fontSize: '20px' }}>Portal Magang</h2>
-          <div style={{ display: 'flex', gap: '20px', fontSize: '15px' }}>
+          <div style={{ display: 'flex', gap: '20px', fontSize: '15px' }} className="dashboard-nav-links">
             <a href="#" onClick={(e) => { e.preventDefault(); setActivePage('dashboard'); }} style={{ textDecoration: 'none', fontWeight: 'bold', color: activePage === 'dashboard' ? '#fff' : 'rgba(255,255,255,0.6)', borderBottom: activePage === 'dashboard' ? '2px solid white' : 'none', paddingBottom: '3px' }}>Dashboard</a>
             <a href="#" onClick={(e) => { e.preventDefault(); setActivePage('program'); }} style={{ textDecoration: 'none', fontWeight: 'bold', color: activePage === 'program' ? '#fff' : 'rgba(255,255,255,0.6)', borderBottom: activePage === 'program' ? '2px solid white' : 'none', paddingBottom: '3px' }}>Program Magang</a>
             <a href="#" onClick={(e) => { e.preventDefault(); setActivePage('panduan'); }} style={{ textDecoration: 'none', fontWeight: 'bold', color: activePage === 'panduan' ? '#fff' : 'rgba(255,255,255,0.6)', borderBottom: activePage === 'panduan' ? '2px solid white' : 'none', paddingBottom: '3px' }}>Panduan</a>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }} className="dashboard-nav-actions">
           <span style={{ fontSize: '13px', background: 'rgba(255,255,255,0.2)', padding: '6px 12px', borderRadius: '20px' }}>Akses: {isAdmin ? 'Administrator' : 'Mahasiswa'}</span>
           <button onClick={handleLogout} style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>Logout</button>
         </div>
       </nav>
-      <div style={{ maxWidth: '1100px', margin: '30px auto', padding: '0 20px' }}>
+      <div style={{ maxWidth: '1100px', margin: '30px auto', padding: '0 20px' }} className="dashboard-container">
         {renderContent()}
       </div>
     </div>

@@ -104,17 +104,17 @@ export default function ProgramsPage() {
       <Navbar user={user} />
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white py-12">
+      <div className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white py-10 sm:py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-2">📋 Semua Program</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">📋 Semua Program</h1>
           <p className="text-indigo-100">Jelajahi peluang magang dan penelitian terbaik</p>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="relative">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-8">
+          <div className="relative md:col-span-2">
             <svg className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -123,7 +123,7 @@ export default function ProgramsPage() {
               placeholder="Cari program atau perusahaan..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="input-field pl-12 md:col-span-2"
+              className="input-field pl-12"
             />
           </div>
           
@@ -149,8 +149,8 @@ export default function ProgramsPage() {
               >
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between">
                   <div className="flex-1 cursor-pointer">
-                    <div className="flex items-center gap-3 mb-3">
-                      <h3 className="text-2xl font-bold text-gray-800">{program.title}</h3>
+                    <div className="flex flex-wrap items-center gap-3 mb-3">
+                      <h3 className="text-xl sm:text-2xl font-bold text-gray-800">{program.title}</h3>
                       <span className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
                         program.type === 'internship' 
                           ? 'bg-blue-100 text-blue-800' 
@@ -168,7 +168,7 @@ export default function ProgramsPage() {
                     <p className="text-gray-600 font-semibold mb-2">{program.company_name}</p>
                     <p className="text-gray-700 mb-3">{program.description}</p>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
                       <div className="flex items-center text-gray-600">
                         <span className="mr-2">📍</span> {program.location}
                       </div>
@@ -186,7 +186,7 @@ export default function ProgramsPage() {
 
                   <button
                     onClick={() => handleRegister(program.id)}
-                    className="mt-4 md:mt-0 md:ml-4 btn-primary whitespace-nowrap"
+                    className="mt-4 md:mt-0 md:ml-4 btn-primary whitespace-nowrap w-full md:w-auto"
                   >
                     Daftar Sekarang
                   </button>
