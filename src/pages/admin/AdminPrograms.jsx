@@ -186,8 +186,8 @@ export default function AdminPrograms() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Form */}
         {showForm && (
-          <div className="card mb-8">
-            <h3 className="text-2xl font-bold mb-6">
+          <div className="card mb-8 border-2 border-indigo-200">
+            <h3 className="text-xl md:text-2xl font-bold mb-6">
               {editingId ? '✏️ Edit Program' : '➕ Program Baru'}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -229,53 +229,65 @@ export default function AdminPrograms() {
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
                   className="input-field"
                 >
-                  <option value="internship">Magang</option>
-                  <option value="research">Penelitian</option>
+                  <option value="internship">🏢 Magang</option>
+                  <option value="research">🔬 Penelitian</option>
                 </select>
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData({...formData, status: e.target.value})}
                   className="input-field"
                 >
-                  <option value="active">Aktif</option>
-                  <option value="inactive">Tidak Aktif</option>
+                  <option value="active">✅ Aktif</option>
+                  <option value="inactive">⏸️ Tidak Aktif</option>
                 </select>
-                <input
-                  type="date"
-                  value={formData.start_date}
-                  onChange={(e) => setFormData({...formData, start_date: e.target.value})}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Tanggal Mulai</label>
+                  <input
+                    type="date"
+                    value={formData.start_date}
+                    onChange={(e) => setFormData({...formData, start_date: e.target.value})}
+                    required
+                    className="input-field"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Tanggal Akhir</label>
+                  <input
+                    type="date"
+                    value={formData.end_date}
+                    onChange={(e) => setFormData({...formData, end_date: e.target.value})}
+                    required
+                    className="input-field"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Deskripsi Program</label>
+                <textarea
+                  placeholder="Deskripsi Program"
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
                   required
-                  className="input-field"
-                />
-                <input
-                  type="date"
-                  value={formData.end_date}
-                  onChange={(e) => setFormData({...formData, end_date: e.target.value})}
-                  required
-                  className="input-field"
+                  className="input-field min-h-24"
                 />
               </div>
-              <textarea
-                placeholder="Deskripsi Program"
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                required
-                className="input-field min-h-24"
-              />
-              <textarea
-                placeholder="Persyaratan (pisahkan dengan baris baru)"
-                value={formData.requirements}
-                onChange={(e) => setFormData({...formData, requirements: e.target.value})}
-                className="input-field min-h-24"
-              />
-              <div className="flex gap-4">
-                <button type="submit" className="btn-primary">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Persyaratan</label>
+                <textarea
+                  placeholder="Persyaratan (pisahkan dengan baris baru)"
+                  value={formData.requirements}
+                  onChange={(e) => setFormData({...formData, requirements: e.target.value})}
+                  className="input-field min-h-24"
+                />
+              </div>
+              <div className="flex flex-col md:flex-row gap-4 pt-4">
+                <button type="submit" className="btn-primary flex-1 md:flex-none">
                   {editingId ? '💾 Update' : '➕ Tambah'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="btn-secondary"
+                  className="btn-secondary flex-1 md:flex-none"
                 >
                   ❌ Batal
                 </button>
@@ -286,54 +298,59 @@ export default function AdminPrograms() {
 
         {/* Programs Table */}
         <div className="overflow-x-auto">
-          <table className="w-full bg-white shadow-lg rounded-lg overflow-hidden">
+          <table className="w-full bg-white shadow-lg rounded-lg overflow-hidden text-sm md:text-base">
             <thead className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white">
               <tr>
-                <th className="px-6 py-3 text-left">Program</th>
-                <th className="px-6 py-3 text-left">Perusahaan</th>
-                <th className="px-6 py-3 text-left">Tipe</th>
-                <th className="px-6 py-3 text-center">Kapasitas</th>
-                <th className="px-6 py-3 text-center">Status</th>
-                <th className="px-6 py-3 text-center">Aksi</th>
+                <th className="px-3 md:px-6 py-3 text-left">Program</th>
+                <th className="px-3 md:px-6 py-3 text-left hidden md:table-cell">Perusahaan</th>
+                <th className="px-3 md:px-6 py-3 text-left">Tipe</th>
+                <th className="px-3 md:px-6 py-3 text-center text-xs md:text-base">Kapasitas</th>
+                <th className="px-3 md:px-6 py-3 text-center hidden md:table-cell">Status</th>
+                <th className="px-3 md:px-6 py-3 text-center text-xs md:text-base">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {programs.map((program) => (
-                <tr key={program.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 font-semibold">{program.title}</td>
-                  <td className="px-6 py-4">{program.company_name}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                <tr key={program.id} className="hover:bg-gray-50 text-xs md:text-base">
+                  <td className="px-3 md:px-6 py-4 font-semibold">{program.title}</td>
+                  <td className="px-3 md:px-6 py-4 hidden md:table-cell">{program.company_name}</td>
+                  <td className="px-3 md:px-6 py-4">
+                    <span className={`px-2 md:px-3 py-1 rounded-full text-xs font-bold ${
                       program.type === 'internship' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
                     }`}>
                       {program.type === 'internship' ? 'Magang' : 'Penelitian'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-center">{program.registered_count} / {program.capacity}</td>
-                  <td className="px-6 py-4 text-center">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                  <td className="px-3 md:px-6 py-4 text-center whitespace-nowrap">
+                    <div>
+                      <p className="font-semibold">{program.registered_count} / {program.capacity}</p>
+                      <p className="text-xs text-gray-600">{program.capacity - program.registered_count} tersisa</p>
+                    </div>
+                  </td>
+                  <td className="px-3 md:px-6 py-4 text-center hidden md:table-cell">
+                    <span className={`px-2 md:px-3 py-1 rounded-full text-xs font-bold ${
                       program.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                     }`}>
                       {program.status === 'active' ? '✅ Aktif' : '⏸️ Tidak Aktif'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="flex gap-2 justify-center">
+                  <td className="px-3 md:px-6 py-4 text-center">
+                    <div className="flex flex-col md:flex-row gap-1 justify-center text-xs md:text-sm">
                       <button
                         onClick={() => handleEdit(program)}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200"
+                        className="px-2 md:px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 whitespace-nowrap"
                       >
                         ✏️ Edit
                       </button>
                       <button
                         onClick={() => handleSoftDelete(program.id)}
-                        className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200"
+                        className="px-2 md:px-3 py-1 bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200 whitespace-nowrap"
                       >
                         🗑️ Soft
                       </button>
                       <button
                         onClick={() => handleHardDelete(program.id)}
-                        className="px-3 py-1 bg-red-100 text-red-800 rounded hover:bg-red-200"
+                        className="px-2 md:px-3 py-1 bg-red-100 text-red-800 rounded hover:bg-red-200 whitespace-nowrap"
                       >
                         ❌ Hard
                       </button>

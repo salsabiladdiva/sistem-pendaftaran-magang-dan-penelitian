@@ -19,10 +19,13 @@ Sistem Informasi Pendaftaran Magang dan Penelitian adalah aplikasi web berbasis 
 - 📋 **CRUD Operations** - Create, Read, Update, Delete dengan soft & hard delete
 - 🔗 **Multi-Table JOIN** - Query dengan 4+ tabel untuk data lengkap
 - 🔍 **Search & Filter** - Cari program, pendaftar, dan registrasi
-- 📱 **Responsive Design** - Mobile-friendly dengan Tailwind CSS
+- 📱 **Responsive Design** - Mobile-friendly dengan Tailwind CSS & adaptive layout
 - 👥 **Role-Based Access** - Separate views untuk Student & Admin
 - 📊 **Dashboard** - Overview statistik dan data summary
 - ✅ **Verification System** - Admin dapat approve/reject pendaftaran
+- 🎯 **Smart Quota Management** - Kuota otomatis berkurang saat pendaftar diterima
+- 🚫 **Duplicate Registration Prevention** - Mahasiswa hanya bisa daftar sekali per program
+- ✏️ **Admin Program Management** - Edit program details dengan mudah
 
 ---
 
@@ -49,11 +52,14 @@ npm install
 ```
 
 ### 2. Setup Environment
+Copy `.env.local.example` atau buat file `.env.local` dengan konfigurasi:
 ```bash
-# Create .env.local
-VITE_SUPABASE_URL=your_url
-VITE_SUPABASE_ANON_KEY=your_key
+# .env.local
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-from-supabase
 ```
+
+Dapatkan credentials dari: [Supabase Dashboard](https://supabase.com/dashboard)
 
 ### 3. Setup Database
 Follow [SETUP_GUIDE.md](./SETUP_GUIDE.md) for SQL scripts
@@ -137,4 +143,17 @@ src/
 
 ---
 
-**Version**: 1.0.0 | **Status**: ✅ Production Ready | **Last Updated**: May 2026
+---
+
+## 🔧 Recent Improvements (v1.1.0)
+
+- ✅ Enhanced responsive design dengan mobile-first approach
+- ✅ Fixed quota bug - otomatis berkurang saat approval
+- ✅ Improved program management UI untuk admin
+- ✅ Duplicate registration prevention untuk mahasiswa
+- ✅ Better display of remaining quota untuk setiap program
+- ✅ Responsive tables & forms di semua ukuran device
+
+---
+
+**Version**: 1.1.0 | **Status**: ✅ Production Ready | **Last Updated**: May 9, 2026

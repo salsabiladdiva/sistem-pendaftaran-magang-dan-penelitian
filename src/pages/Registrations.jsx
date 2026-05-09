@@ -154,13 +154,13 @@ export default function RegistrationsPage() {
           <div className="space-y-4">
             {filteredRegistrations.map((registration) => (
               <div key={registration.id} className="card hover:shadow-lg transition-all">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex flex-col gap-4">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <h3 className="text-xl font-bold text-gray-800">
+                    <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-3">
+                      <h3 className="text-lg md:text-xl font-bold text-gray-800 flex-1">
                         {registration.programs?.title}
                       </h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
+                      <span className={`px-2 md:px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
                         registration.programs?.type === 'internship'
                           ? 'bg-blue-100 text-blue-800'
                           : 'bg-purple-100 text-purple-800'
@@ -169,20 +169,23 @@ export default function RegistrationsPage() {
                       </span>
                     </div>
 
-                    <p className="text-gray-600 mb-3">{registration.programs?.company_name}</p>
+                    <p className="text-gray-600 mb-3 text-sm md:text-base">{registration.programs?.company_name}</p>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 text-xs md:text-sm text-gray-600 mb-4">
                       <div className="flex items-center">
-                        <span className="mr-2">📍</span>{registration.programs?.location}
+                        <span className="mr-1 md:mr-2">📍</span>
+                        <span className="truncate">{registration.programs?.location}</span>
                       </div>
                       <div className="flex items-center">
-                        <span className="mr-2">📅</span>{new Date(registration.submission_date).toLocaleDateString('id-ID')}
+                        <span className="mr-1 md:mr-2">📅</span>
+                        <span className="truncate">{new Date(registration.submission_date).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}</span>
                       </div>
                       <div className="flex items-center">
-                        <span className="mr-2">🔚</span>{new Date(registration.programs?.end_date).toLocaleDateString('id-ID')}
+                        <span className="mr-1 md:mr-2">🔚</span>
+                        <span className="truncate">{new Date(registration.programs?.end_date).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}</span>
                       </div>
                       <div className="flex items-center">
-                        <span className="mr-2">{getStatusIcon(registration.status)}</span>
+                        <span className="mr-1">{getStatusIcon(registration.status)}</span>
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(registration.status)}`}>
                           {registration.status === 'pending' && 'Menunggu'}
                           {registration.status === 'approved' && 'Diterima'}
@@ -192,21 +195,21 @@ export default function RegistrationsPage() {
                     </div>
 
                     {registration.notes && (
-                      <div className="bg-blue-50 border-l-4 border-blue-500 p-3 text-sm text-blue-800 mb-3">
+                      <div className="bg-blue-50 border-l-4 border-blue-500 p-3 text-xs md:text-sm text-blue-800 mb-3">
                         <p className="font-semibold">Catatan Verifikator:</p>
                         <p>{registration.notes}</p>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex gap-2 md:flex-col">
-                    <button className="btn-secondary text-sm py-2 flex-1">
+                  <div className="grid grid-cols-2 gap-2 md:flex md:gap-2">
+                    <button className="btn-secondary text-sm py-2">
                       Detail
                     </button>
                     {registration.status === 'pending' && (
                       <button
                         onClick={() => handleSoftDelete(registration.id)}
-                        className="btn-danger text-sm py-2 flex-1"
+                        className="btn-danger text-sm py-2"
                       >
                         Batalkan
                       </button>
