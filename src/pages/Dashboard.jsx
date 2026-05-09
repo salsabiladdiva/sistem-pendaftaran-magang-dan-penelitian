@@ -137,21 +137,36 @@ export default function Dashboard() {
   };
 
   const handleDaftar = async (e) => {
-    e.preventDefault();
-    if (!selectedProgram) {
-      alert('Pilih program terlebih dahulu!');
-      return;
-    }
-    const { error } = await supabase.from('applications').insert([
-      { profile_id: sessionUser.id, program_id: selectedProgram, status: 'Menunggu Verifikasi' }
-    ]);
-    if (error) alert('Gagal mendaftar!');
-    else {
-      alert('Berhasil Mendaftar!');
-      fetchData(sessionUser); 
-      setActivePage('dashboard'); 
-    }
-  };
+  e.preventDefault();
+  if (!selectedProgram) {
+    alert('Pilih program terlebih dahulu!');
+    return;
+  }
+
+  // --- TAMBAHKAN LOGIKA PROTEKSI DI SINI ---
+  const { data: existing } = await supabase
+    .from('applications')
+    .select('id')
+    .eq('profile_id', sessionUser.id)
+    .eq('program_id', selectedProgram);
+
+  if (existing && existing.length > 0) {
+    alert('Anda sudah mendaftar di program ini sebelumnya!');
+    return;
+  }
+  // ------------------------------------------
+
+  const { error } = await supabase.from('applications').insert([
+    { profile_id: sessionUser.id, program_id: selectedProgram, status: 'Menunggu Verifikasi' }
+  ]);
+  
+  if (error) alert('Gagal mendaftar!');
+  else {
+    alert('Berhasil Mendaftar!');
+    fetchData(sessionUser); 
+    setActivePage('dashboard'); 
+  }
+};
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
