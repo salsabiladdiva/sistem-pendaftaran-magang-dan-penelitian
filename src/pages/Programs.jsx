@@ -10,6 +10,7 @@ export default function ProgramsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [userRegistrations, setUserRegistrations] = useState({});
+  const [hasPendingRegistration, setHasPendingRegistration] = useState(false);
 
   useEffect(() => {
     getCurrentUser();
@@ -36,11 +37,17 @@ export default function ProgramsPage() {
       
       // Create object: { program_id: status }
       const registrations = {};
+      let hasPending = false;
+      
       data?.forEach(reg => {
         registrations[reg.program_id] = reg.status;
+        if (reg.status === 'pending') {
+          hasPending = true;
+        }
       });
       
       setUserRegistrations(registrations);
+      setHasPendingRegistration(hasPending);
     } catch (error) {
       console.error('Error fetching user registrations:', error);
     }
@@ -80,7 +87,21 @@ export default function ProgramsPage() {
     }
 
     try {
-      // Check if already registered with non-rejected status
+      // Check if user has ANY pending registration (global check)
+      const { data: pendingRegistrations } = await supabase
+        .from('registrations')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'pending')
+        .is('deleted_at', null);
+
+      if (pendingRegistrations && pendingRegistrations.length > 0) {
+        const pendingProgram = pendingRegistrations[0];
+        alert(`Anda masih memiliki pendaftaran yang menunggu verifikasi. Harap tunggu sampai pendaftaran Anda diproses sebelum mendaftar ke program lain.`);
+        return;
+      }
+
+      // Check if already registered in this specific program with non-rejected status
       const { data: existing } = await supabase
         .from('registrations')
         .select('*')
@@ -219,7 +240,19 @@ export default function ProgramsPage() {
                     </div>
                   </div>
 
-                  {userRegistrations[program.id] && userRegistrations[program.id] !== 'rejected' ? (
+                  {hasPendingRegistration ? (
+                    <div className="flex flex-col gap-2">
+                      <button
+                        disabled
+                        className="w-full md:w-auto px-6 py-2 bg-gray-300 text-gray-600 rounded-lg font-semibold cursor-not-allowed whitespace-nowrap"
+                      >
+                        ⏳ Ada Pendaftaran Menunggu
+                      </button>
+                      <p className="text-xs text-red-500 font-semibold">
+                        Anda masih memiliki pendaftaran yang sedang diverifikasi. Tunggu hasilnya sebelum mendaftar ke program lain.
+                      </p>
+                    </div>
+                  ) : userRegistrations[program.id] && userRegistrations[program.id] !== 'rejected' ? (
                     <div className="flex flex-col gap-2">
                       <button
                         disabled
