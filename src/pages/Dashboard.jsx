@@ -13,7 +13,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // --- STATE BARU: Profil User ---
+  // --- STATE: Profil User ---
   const [userProfile, setUserProfile] = useState(null);
 
   // --- STATE UNTUK NAVBAR REAL (SPA Routing) ---
@@ -57,7 +57,7 @@ export default function Dashboard() {
     const { data: programData } = await supabase.from('programs').select('*').order('created_at', { ascending: false });
     if (programData) setPrograms(programData);
 
-    // 3. KETENTUAN 7: Query JOIN 3 Tabel (applications + profiles + programs)
+    // 3. Query JOIN 3 Tabel (applications + profiles + programs)
     let query = supabase
       .from('applications')
       .select(`
@@ -101,9 +101,35 @@ export default function Dashboard() {
     }
   };
 
-  const handleUpdateStatus = async (id, statusBaru) => {
+  // FITUR BARU: Update Status & Otomatis Potong/Tambah Kuota
+  const handleUpdateStatus = async (id, programId, statusBaru, statusLama) => {
+    // 1. Update status aplikasinya di tabel 'applications'
     const { error } = await supabase.from('applications').update({ status: statusBaru }).eq('id', id);
-    if (!error) fetchData(sessionUser);
+    
+    if (!error) {
+      // 2. Logika canggih potong/tambah kuota
+      if (statusBaru === 'Diterima' && statusLama !== 'Diterima') {
+        // Jika BARU SAJA diterima, kurangi kuota 1
+        const { data: program } = await supabase.from('programs').select('kuota').eq('id', programId).single();
+        if (program && program.kuota > 0) {
+          await supabase.from('programs').update({ kuota: program.kuota - 1 }).eq('id', programId);
+        } else {
+          alert('Peringatan: Kuota program sudah habis tapi peserta tetap diterima!');
+        }
+      } 
+      else if (statusLama === 'Diterima' && statusBaru !== 'Diterima') {
+        // Jika SEBELUMNYA diterima tapi SEKARANG dibatalkan/ditolak, kembalikan kuota 1
+        const { data: program } = await supabase.from('programs').select('kuota').eq('id', programId).single();
+        if (program) {
+          await supabase.from('programs').update({ kuota: program.kuota + 1 }).eq('id', programId);
+        }
+      }
+      
+      // 3. Refresh semua data agar angka kuota di layar otomatis terupdate
+      fetchData(sessionUser);
+    } else {
+      alert('Gagal mengupdate status: ' + error.message);
+    }
   };
 
   const handleSoftDelete = async (id) => {
@@ -218,6 +244,7 @@ export default function Dashboard() {
             <h3>Bagi Administrator:</h3>
             <ol>
               <li>Gunakan <b>Dashboard</b> untuk menambah program dan verifikasi pendaftar.</li>
+              <li>Saat Anda mengubah status menjadi "Diterima", kuota program akan otomatis berkurang.</li>
               <li>Fitur <b>Soft Delete</b> memindahkan data ke Tong Sampah (bisa dipulihkan).</li>
               <li>Fitur <b>Hard Delete</b> menghapus data permanen.</li>
             </ol>
@@ -306,7 +333,12 @@ export default function Dashboard() {
                   <td style={{ padding: '12px' }}>{app.programs?.jenis}</td>
                   <td style={{ padding: '12px' }}>
                     {isAdmin && viewMode === 'active' ? (
-                      <select value={app.status} onChange={(e) => handleUpdateStatus(app.id, e.target.value)} style={{ padding: '5px' }}>
+                      <select 
+                        value={app.status} 
+                        // MENGIRIM ID PROGRAM DAN STATUS LAMA KE FUNGSI UPDATE 
+                        onChange={(e) => handleUpdateStatus(app.id, app.programs.id, e.target.value, app.status)} 
+                        style={{ padding: '5px', borderRadius: '5px', border: '1px solid #ccc' }}
+                      >
                         <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
                         <option value="Diterima">Diterima</option>
                         <option value="Ditolak">Ditolak</option>
