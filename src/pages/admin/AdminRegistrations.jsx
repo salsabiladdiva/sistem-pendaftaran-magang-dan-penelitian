@@ -142,16 +142,16 @@ export default function AdminRegistrations() {
       <Navbar user={user} />
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white py-12">
+      <div className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white py-10 sm:py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-4xl font-bold">📋 Kelola Registrasi</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">📋 Kelola Registrasi</h1>
           <p className="text-indigo-100">Admin Panel - Verifikasi Pendaftaran Peserta</p>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="card bg-gradient-to-br from-blue-50 to-blue-100 border-l-4 border-blue-600">
             <p className="text-gray-600 font-semibold">Total</p>
             <p className="text-3xl font-bold text-blue-600">{stats.total}</p>
@@ -199,7 +199,7 @@ export default function AdminRegistrations() {
 
         {/* Registrations Table */}
         <div className="overflow-x-auto">
-          <table className="w-full bg-white shadow-lg rounded-lg overflow-hidden">
+          <table className="w-full min-w-[900px] bg-white shadow-lg rounded-lg overflow-hidden">
             <thead className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white">
               <tr>
                 <th className="px-6 py-3 text-left">Pendaftar</th>
