@@ -9,7 +9,7 @@ export default function ProgramsPage() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [selectedProgram, setSelectedProgram] = useState(null);
-  const [userRegistrations, setUserRegistrations] = useState([]);
+  const [userRegistrations, setUserRegistrations] = useState({});
 
   useEffect(() => {
     getCurrentUser();
@@ -28,12 +28,19 @@ export default function ProgramsPage() {
     try {
       const { data, error } = await supabase
         .from('registrations')
-        .select('program_id')
+        .select('program_id, status')
         .eq('user_id', userId)
         .is('deleted_at', null);
 
       if (error) throw error;
-      setUserRegistrations(data?.map(reg => reg.program_id) || []);
+      
+      // Create object: { program_id: status }
+      const registrations = {};
+      data?.forEach(reg => {
+        registrations[reg.program_id] = reg.status;
+      });
+      
+      setUserRegistrations(registrations);
     } catch (error) {
       console.error('Error fetching user registrations:', error);
     }
@@ -73,16 +80,22 @@ export default function ProgramsPage() {
     }
 
     try {
-      // Check if already registered in this program
+      // Check if already registered with non-rejected status
       const { data: existing } = await supabase
         .from('registrations')
         .select('*')
         .eq('user_id', user.id)
         .eq('program_id', programId)
+        .neq('status', 'rejected')
         .is('deleted_at', null);
 
       if (existing && existing.length > 0) {
-        alert('Anda sudah mendaftar di program ini');
+        const status = existing[0].status;
+        alert(
+          status === 'pending' 
+            ? 'Pendaftaran Anda masih dalam proses verifikasi'
+            : 'Anda sudah diterima di program ini'
+        );
         return;
       }
 
@@ -98,6 +111,7 @@ export default function ProgramsPage() {
 
       if (error) throw error;
       alert('Pendaftaran berhasil! Status Anda: Menunggu Verifikasi');
+      fetchUserRegistrations(user.id);
       fetchPrograms();
     } catch (error) {
       console.error('Error registering:', error);
@@ -205,17 +219,42 @@ export default function ProgramsPage() {
                     </div>
                   </div>
 
-                  {userRegistrations.includes(program.id) ? (
-                    <button
-                      disabled
-                      className="w-full md:w-auto px-6 py-2 bg-gray-300 text-gray-600 rounded-lg font-semibold cursor-not-allowed whitespace-nowrap justify-center md:justify-start"
-                    >
-                      ✅ Sudah Terdaftar
-                    </button>
+                  {userRegistrations[program.id] && userRegistrations[program.id] !== 'rejected' ? (
+                    <div className="flex flex-col gap-2">
+                      <button
+                        disabled
+                        className="w-full md:w-auto px-6 py-2 bg-gray-300 text-gray-600 rounded-lg font-semibold cursor-not-allowed whitespace-nowrap"
+                      >
+                        ✅ Sudah Terdaftar
+                      </button>
+                      <p className="text-xs text-gray-500">
+                        Status: <span className={`font-semibold ${
+                          userRegistrations[program.id] === 'pending' ? 'text-yellow-600' :
+                          userRegistrations[program.id] === 'approved' ? 'text-green-600' :
+                          'text-red-600'
+                        }`}>
+                          {userRegistrations[program.id] === 'pending' ? 'Menunggu' :
+                           userRegistrations[program.id] === 'approved' ? 'Diterima' :
+                           'Ditolak'}
+                        </span>
+                      </p>
+                    </div>
+                  ) : userRegistrations[program.id] === 'rejected' ? (
+                    <div className="flex flex-col gap-2">
+                      <button
+                        onClick={() => handleRegister(program.id)}
+                        className="w-full md:w-auto btn-primary whitespace-nowrap"
+                      >
+                        Daftar Lagi
+                      </button>
+                      <p className="text-xs text-red-500">
+                        Pendaftaran sebelumnya ditolak, Anda bisa mendaftar lagi
+                      </p>
+                    </div>
                   ) : (
                     <button
                       onClick={() => handleRegister(program.id)}
-                      className="w-full md:w-auto btn-primary whitespace-nowrap justify-center md:justify-start"
+                      className="w-full md:w-auto btn-primary whitespace-nowrap"
                     >
                       Daftar Sekarang
                     </button>
