@@ -137,10 +137,10 @@ export default function AdminSupervisors() {
       <Navbar user={user} />
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+      <div className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white py-10 sm:py-12">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
-            <h1 className="text-4xl font-bold">👨‍🏫 Kelola Pembimbing</h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">👨‍🏫 Kelola Pembimbing</h1>
             <p className="text-indigo-100">Admin Panel - Manajemen Data Pembimbing/Mentor</p>
           </div>
           <button
@@ -155,7 +155,7 @@ export default function AdminSupervisors() {
                 expertise: ''
               });
             }}
-            className="btn-primary"
+            className="btn-primary w-full sm:w-auto"
           >
             ➕ Tambah Pembimbing
           </button>
@@ -227,7 +227,7 @@ export default function AdminSupervisors() {
 
         {/* Supervisors Grid */}
         {supervisors.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {supervisors.map((supervisor) => (
               <div key={supervisor.id} className="card hover:shadow-xl transition-all">
                 <div className="flex items-start justify-between mb-4">
@@ -255,7 +255,7 @@ export default function AdminSupervisors() {
                   )}
                 </div>
 
-                <div className="flex gap-2 pt-4 border-t border-gray-200">
+                <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-gray-200">
                   <button
                     onClick={() => handleEdit(supervisor)}
                     className="flex-1 px-3 py-2 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 text-sm font-semibold"

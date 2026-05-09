@@ -153,10 +153,10 @@ export default function AdminPrograms() {
       <Navbar user={user} />
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+      <div className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white py-10 sm:py-12">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
-            <h1 className="text-4xl font-bold">⚙️ Kelola Program</h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">⚙️ Kelola Program</h1>
             <p className="text-indigo-100">Admin Panel - Manajemen Program Magang & Penelitian</p>
           </div>
           <button
@@ -176,7 +176,7 @@ export default function AdminPrograms() {
                 status: 'active'
               });
             }}
-            className="btn-primary"
+            className="btn-primary w-full sm:w-auto"
           >
             ➕ Tambah Program
           </button>
@@ -268,7 +268,7 @@ export default function AdminPrograms() {
                 onChange={(e) => setFormData({...formData, requirements: e.target.value})}
                 className="input-field min-h-24"
               />
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button type="submit" className="btn-primary">
                   {editingId ? '💾 Update' : '➕ Tambah'}
                 </button>
@@ -286,7 +286,7 @@ export default function AdminPrograms() {
 
         {/* Programs Table */}
         <div className="overflow-x-auto">
-          <table className="w-full bg-white shadow-lg rounded-lg overflow-hidden">
+          <table className="w-full min-w-[900px] bg-white shadow-lg rounded-lg overflow-hidden">
             <thead className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white">
               <tr>
                 <th className="px-6 py-3 text-left">Program</th>
