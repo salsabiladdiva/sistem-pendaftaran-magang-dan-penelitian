@@ -9,6 +9,7 @@ export default function ProgramsPage() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [selectedProgram, setSelectedProgram] = useState(null);
+  const [userRegistrations, setUserRegistrations] = useState([]);
 
   useEffect(() => {
     getCurrentUser();
@@ -19,6 +20,22 @@ export default function ProgramsPage() {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
       setUser(session.user);
+      fetchUserRegistrations(session.user.id);
+    }
+  };
+
+  const fetchUserRegistrations = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('registrations')
+        .select('program_id')
+        .eq('user_id', userId)
+        .is('deleted_at', null);
+
+      if (error) throw error;
+      setUserRegistrations(data?.map(reg => reg.program_id) || []);
+    } catch (error) {
+      console.error('Error fetching user registrations:', error);
     }
   };
 
@@ -56,7 +73,7 @@ export default function ProgramsPage() {
     }
 
     try {
-      // Check if already registered
+      // Check if already registered in this program
       const { data: existing } = await supabase
         .from('registrations')
         .select('*')
@@ -114,7 +131,7 @@ export default function ProgramsPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Filters */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="relative">
+          <div className="relative md:col-span-2">
             <svg className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -123,7 +140,7 @@ export default function ProgramsPage() {
               placeholder="Cari program atau perusahaan..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="input-field pl-12 md:col-span-2"
+              className="input-field pl-12"
             />
           </div>
           
@@ -147,11 +164,11 @@ export default function ProgramsPage() {
                 className="card hover:shadow-xl transition-all"
                 onClick={() => setSelectedProgram(selectedProgram?.id === program.id ? null : program)}
               >
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between">
+                <div className="flex flex-col gap-4">
                   <div className="flex-1 cursor-pointer">
-                    <div className="flex items-center gap-3 mb-3">
-                      <h3 className="text-2xl font-bold text-gray-800">{program.title}</h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
+                    <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-3">
+                      <h3 className="text-xl md:text-2xl font-bold text-gray-800">{program.title}</h3>
+                      <span className={`px-2 md:px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
                         program.type === 'internship' 
                           ? 'bg-blue-100 text-blue-800' 
                           : 'bg-purple-100 text-purple-800'
@@ -159,37 +176,50 @@ export default function ProgramsPage() {
                         {program.type === 'internship' ? '🏢 Magang' : '🔬 Penelitian'}
                       </span>
                       {program.status === 'active' && (
-                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">
+                        <span className="px-2 md:px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">
                           ✅ Aktif
                         </span>
                       )}
                     </div>
                     
-                    <p className="text-gray-600 font-semibold mb-2">{program.company_name}</p>
-                    <p className="text-gray-700 mb-3">{program.description}</p>
+                    <p className="text-gray-600 font-semibold mb-2 text-sm md:text-base">{program.company_name}</p>
+                    <p className="text-gray-700 mb-3 text-sm md:text-base line-clamp-2">{program.description}</p>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 text-xs md:text-sm mb-4">
                       <div className="flex items-center text-gray-600">
-                        <span className="mr-2">📍</span> {program.location}
+                        <span className="mr-1 md:mr-2">📍</span> 
+                        <span className="truncate">{program.location}</span>
                       </div>
                       <div className="flex items-center text-gray-600">
-                        <span className="mr-2">👥</span> {program.registered_count} / {program.capacity}
+                        <span className="mr-1 md:mr-2">👥</span> 
+                        <span>{program.capacity - program.registered_count} / {program.capacity}</span>
                       </div>
                       <div className="flex items-center text-gray-600">
-                        <span className="mr-2">📅</span> {new Date(program.start_date).toLocaleDateString('id-ID')}
+                        <span className="mr-1 md:mr-2">📅</span> 
+                        <span className="truncate">{new Date(program.start_date).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}</span>
                       </div>
                       <div className="flex items-center text-gray-600">
-                        <span className="mr-2">🔚</span> {new Date(program.end_date).toLocaleDateString('id-ID')}
+                        <span className="mr-1 md:mr-2">🔚</span> 
+                        <span className="truncate">{new Date(program.end_date).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}</span>
                       </div>
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => handleRegister(program.id)}
-                    className="mt-4 md:mt-0 md:ml-4 btn-primary whitespace-nowrap"
-                  >
-                    Daftar Sekarang
-                  </button>
+                  {userRegistrations.includes(program.id) ? (
+                    <button
+                      disabled
+                      className="w-full md:w-auto px-6 py-2 bg-gray-300 text-gray-600 rounded-lg font-semibold cursor-not-allowed whitespace-nowrap justify-center md:justify-start"
+                    >
+                      ✅ Sudah Terdaftar
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleRegister(program.id)}
+                      className="w-full md:w-auto btn-primary whitespace-nowrap justify-center md:justify-start"
+                    >
+                      Daftar Sekarang
+                    </button>
+                  )}
                 </div>
 
                 {/* Capacity Bar */}
@@ -203,10 +233,15 @@ export default function ProgramsPage() {
                       className={`h-2 rounded-full transition-all ${
                         (program.registered_count / program.capacity) > 0.8
                           ? 'bg-red-500'
+                          : (program.registered_count / program.capacity) > 0.5
+                          ? 'bg-yellow-500'
                           : 'bg-gradient-to-r from-indigo-600 to-pink-600'
                       }`}
                       style={{ width: `${Math.min((program.registered_count / program.capacity) * 100, 100)}%` }}
                     ></div>
+                  </div>
+                  <div className="text-xs text-gray-600 mt-2">
+                    <span className="font-semibold">{program.capacity - program.registered_count} kuota tersisa</span>
                   </div>
                 </div>
 

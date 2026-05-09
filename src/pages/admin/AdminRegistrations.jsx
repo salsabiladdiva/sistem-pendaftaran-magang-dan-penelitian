@@ -44,7 +44,20 @@ export default function AdminRegistrations() {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      const { error } = await supabase
+      // Get registration data to access program info
+      const { data: regData } = await supabase
+        .from('registrations')
+        .select('*, programs(capacity, registered_count)')
+        .eq('id', id)
+        .single();
+
+      if (!regData) throw new Error('Registrasi tidak ditemukan');
+
+      // Get old status
+      const oldStatus = regData.status;
+
+      // Update registration status
+      const { error: updateError } = await supabase
         .from('registrations')
         .update({ 
           status: newStatus,
@@ -53,10 +66,38 @@ export default function AdminRegistrations() {
         })
         .eq('id', id);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
+
+      // Handle kuota changes
+      if (oldStatus !== 'approved' && newStatus === 'approved') {
+        // Status changed TO approved - decrease kuota
+        const currentKuota = regData.programs?.capacity || 0;
+        const registeredCount = (regData.programs?.registered_count || 0) + 1;
+        const newKuota = currentKuota - 1;
+
+        if (newKuota >= 0) {
+          const { error: kuotaError } = await supabase
+            .from('programs')
+            .update({ registered_count: registeredCount })
+            .eq('id', regData.program_id);
+
+          if (kuotaError) throw kuotaError;
+        }
+      } else if (oldStatus === 'approved' && newStatus !== 'approved') {
+        // Status changed FROM approved - increase kuota back
+        const registeredCount = Math.max((regData.programs?.registered_count || 1) - 1, 0);
+        const { error: kuotaError } = await supabase
+          .from('programs')
+          .update({ registered_count: registeredCount })
+          .eq('id', regData.program_id);
+
+        if (kuotaError) throw kuotaError;
+      }
+
       alert('Status berhasil diubah');
       fetchRegistrations();
     } catch (error) {
+      console.error('Error:', error);
       alert('Gagal: ' + error.message);
     }
   };
@@ -199,39 +240,39 @@ export default function AdminRegistrations() {
 
         {/* Registrations Table */}
         <div className="overflow-x-auto">
-          <table className="w-full bg-white shadow-lg rounded-lg overflow-hidden">
+          <table className="w-full bg-white shadow-lg rounded-lg overflow-hidden text-xs md:text-base">
             <thead className="bg-gradient-to-r from-indigo-600 to-pink-600 text-white">
               <tr>
-                <th className="px-6 py-3 text-left">Pendaftar</th>
-                <th className="px-6 py-3 text-left">Program</th>
-                <th className="px-6 py-3 text-left">Tanggal Daftar</th>
-                <th className="px-6 py-3 text-center">Status</th>
-                <th className="px-6 py-3 text-center">Aksi</th>
+                <th className="px-3 md:px-6 py-3 text-left">Pendaftar</th>
+                <th className="px-3 md:px-6 py-3 text-left hidden md:table-cell">Program</th>
+                <th className="px-3 md:px-6 py-3 text-left">Tanggal</th>
+                <th className="px-3 md:px-6 py-3 text-center">Status</th>
+                <th className="px-3 md:px-6 py-3 text-center text-xs md:text-base">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredRegistrations.map((reg) => (
                 <tr key={reg.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
+                  <td className="px-3 md:px-6 py-4">
                     <div>
-                      <p className="font-semibold">{reg.users?.name}</p>
-                      <p className="text-sm text-gray-600">{reg.users?.email}</p>
+                      <p className="font-semibold text-xs md:text-base">{reg.users?.name}</p>
+                      <p className="text-xs text-gray-600 truncate">{reg.users?.email}</p>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-3 md:px-6 py-4 hidden md:table-cell">
                     <div>
-                      <p className="font-semibold">{reg.programs?.title}</p>
-                      <p className="text-sm text-gray-600">{reg.programs?.company_name}</p>
+                      <p className="font-semibold text-sm">{reg.programs?.title}</p>
+                      <p className="text-xs text-gray-600">{reg.programs?.company_name}</p>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm">
-                    {new Date(reg.submission_date).toLocaleDateString('id-ID')}
+                  <td className="px-3 md:px-6 py-4 text-xs md:text-sm whitespace-nowrap">
+                    {new Date(reg.submission_date).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
                   </td>
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-3 md:px-6 py-4 text-center">
                     <select
                       value={reg.status}
                       onChange={(e) => handleStatusChange(reg.id, e.target.value)}
-                      className={`px-3 py-1 rounded text-xs font-bold cursor-pointer ${
+                      className={`px-2 md:px-3 py-1 rounded text-xs font-bold cursor-pointer ${
                         reg.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                         reg.status === 'approved' ? 'bg-green-100 text-green-800' :
                         'bg-red-100 text-red-800'
@@ -242,23 +283,26 @@ export default function AdminRegistrations() {
                       <option value="rejected">❌ Tolak</option>
                     </select>
                   </td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="flex gap-2 justify-center">
+                  <td className="px-3 md:px-6 py-4 text-center">
+                    <div className="flex flex-col md:flex-row gap-1 justify-center">
                       <button
                         onClick={() => handleAddNote(reg.id)}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200"
+                        className="px-2 md:px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 text-xs md:text-sm"
+                        title="Tambah catatan"
                       >
                         📝
                       </button>
                       <button
                         onClick={() => handleSoftDelete(reg.id)}
-                        className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200"
+                        className="px-2 md:px-3 py-1 bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200 text-xs md:text-sm"
+                        title="Soft delete"
                       >
                         🗑️
                       </button>
                       <button
                         onClick={() => handleHardDelete(reg.id)}
-                        className="px-3 py-1 bg-red-100 text-red-800 rounded hover:bg-red-200"
+                        className="px-2 md:px-3 py-1 bg-red-100 text-red-800 rounded hover:bg-red-200 text-xs md:text-sm"
+                        title="Hard delete"
                       >
                         ❌
                       </button>
