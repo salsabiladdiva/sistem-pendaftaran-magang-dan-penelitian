@@ -35,14 +35,27 @@ export default function Login() {
           if (profileError) throw profileError;
         }
 
-        // Tampilkan pesan sukses cantik
+        // 3. --- TAMBAHAN BARU: PAKSA LOGOUT ---
+        // Karena Auto-Login aktif, kita paksa keluar dulu agar user tetap di halaman Login
+        await supabase.auth.signOut();
+
+        // 4. Tampilkan pesan sukses cantik
         setPesanSukses('Pendaftaran berhasil! Silakan masuk dengan akun Anda.');
-        setIsRegister(false); 
+        setIsRegister(false); // Mengubah form kembali ke mode Login
         setPassword(''); 
       } else {
         // Proses Login
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw new Error('Email atau password salah!'); // Custom error message
+        if (error) {
+          // Mengecek jika errornya karena email belum diverifikasi (buat jaga-jaga kalau fitur Confirm Email nyala lagi)
+          if (error.message.includes('Email not confirmed')) {
+            throw new Error('Email belum diverifikasi. Silakan cek kotak masuk email Anda.');
+          }
+          // Menampilkan pesan error bawaan Supabase
+          throw error; 
+        }
+        
+        // Kalau sukses login, langsung diarahkan ke Dashboard
         navigate('/');
       }
     } catch (error) {
@@ -77,19 +90,19 @@ export default function Login() {
           {isRegister ? 'Pendaftaran Akun Baru' : 'Pendaftaran Magang & Penelitian'}
         </p>
 
-        
+        {/* Kotak Pesan Error */}
         {pesanError && (
           <div style={{ padding: '10px', marginBottom: '15px', backgroundColor: '#ffebee', color: '#c62828', borderRadius: '5px', fontSize: '14px', textAlign: 'center' }}>
             {pesanError}
           </div>
         )}
         
+        {/* Kotak Pesan Sukses */}
         {pesanSukses && (
           <div style={{ padding: '10px', marginBottom: '15px', backgroundColor: '#e8f5e9', color: '#2e7d32', borderRadius: '5px', fontSize: '14px', textAlign: 'center' }}>
             {pesanSukses}
           </div>
         )}
-        
         
         <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           
