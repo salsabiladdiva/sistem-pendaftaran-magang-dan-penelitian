@@ -293,7 +293,7 @@ export default function Dashboard() {
               {isAdmin && (
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button onClick={() => setViewMode('active')} style={{ padding: '8px 15px', border: 'none', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', backgroundColor: viewMode === 'active' ? '#e0f2fe' : '#f1f5f9', color: viewMode === 'active' ? '#0284c7' : '#64748b' }}>🟢 Data Aktif</button>
-                  {/* UBAH TOMBOL TAB MENJADI ARCHIVE */}
+                  
                   <button onClick={() => setViewMode('trash')} style={{ padding: '8px 15px', border: 'none', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', backgroundColor: viewMode === 'trash' ? '#fee2e2' : '#f1f5f9', color: viewMode === 'trash' ? '#dc2626' : '#64748b' }}>📦 Archive</button>
                 </div>
               )}
@@ -339,7 +339,7 @@ export default function Dashboard() {
                   {isAdmin && (
                     <td style={{ padding: '12px', textAlign: 'center' }}>
                       {viewMode === 'active' ? (
-                        {/* UBAH TOMBOL SOFT DELETE */}
+                        
                         <button onClick={() => handleSoftDelete(app.id)} style={{ backgroundColor: '#f59e0b', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Archive</button>
                       ) : (
                         <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
