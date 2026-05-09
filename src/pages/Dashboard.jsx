@@ -197,7 +197,7 @@ export default function Dashboard() {
                 <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Kategori:</strong> {prog.jenis}</p>
                 <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Sisa Kuota:</strong> {prog.kuota} Peserta</p>
                 {!isAdmin && (
-                  <button onClick={() => { setSelectedProgram(prog.id); setFormProgramSearch(`${prog.judul} (${prog.jenis})`); setActivePage('dashboard'); }} style={{ marginTop: '15px', backgroundColor: '#0284c7', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', width: '100%' }}>Daftar Program Ini</button>
+                  <button onClick={() => { setSelectedProgram(prog.id); setFormProgramSearch(`${prog.judul}`); setActivePage('dashboard'); }} style={{ marginTop: '15px', backgroundColor: '#0284c7', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', width: '100%' }}>Daftar Program Ini</button>
                 )}
                 {isAdmin && (
                   <button onClick={() => handleHapusProgram(prog.id)} style={{ marginTop: '15px', backgroundColor: '#dc2626', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', width: '100%', fontWeight: 'bold' }}>🗑️ Hapus Program</button>
