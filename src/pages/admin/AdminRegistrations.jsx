@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import Navbar from '../../components/Navbar';
+import TopPrograms from '../../components/TopPrograms';
 
 export default function AdminRegistrations() {
   const [user, setUser] = useState(null);
@@ -150,6 +151,9 @@ export default function AdminRegistrations() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Top 3 Programs */}
+        <TopPrograms registrations={registrations} />
+
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="card bg-gradient-to-br from-blue-50 to-blue-100 border-l-4 border-blue-600">
