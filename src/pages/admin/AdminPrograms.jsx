@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import Navbar from '../../components/Navbar';
+import TopProgramsAdmin from '../../components/TopProgramsAdmin';
 
 export default function AdminPrograms() {
   const [user, setUser] = useState(null);
@@ -184,6 +185,9 @@ export default function AdminPrograms() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Top 3 Programs */}
+        <TopProgramsAdmin programs={programs} />
+
         {/* Form */}
         {showForm && (
           <div className="card mb-8">

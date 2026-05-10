@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
+import TopProgramsUser from '../components/TopProgramsUser';
 
 export default function Dashboard() {
   const [applications, setApplications] = useState([]);
@@ -342,6 +343,9 @@ const handleEditProgram = async (e) => {
             Anda masuk sebagai <span style={{ fontWeight: 'bold', color: isAdmin ? '#dc2626' : '#0284c7' }}>{isAdmin ? 'Administrator' : 'Mahasiswa'}</span>.
           </p>
         </div>
+
+        {/* Top Programs Rating */}
+        <TopProgramsUser applications={filteredData} programs={programs} />
 
         {isAdmin ? (
           <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', marginBottom: '20px' }} className="dashboard-card">
